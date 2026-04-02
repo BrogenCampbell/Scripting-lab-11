@@ -17,7 +17,7 @@ jobs:
 
       # 2. Start the database using your docker-compose.yml
       - name: Start Database
-        run: docker-compose up -d
+        run: **docker compose** up -d
 
       # 3. Wait for Postgres to be ready
       # It takes a few seconds for Postgres to fully initialize
@@ -31,5 +31,5 @@ jobs:
       # 4. Run your bash script
       - name: Run Database Initialization Script
         run: |
-          chmod +x init_db.sh
-          ./init_db.sh
+          chmod +x **init-db.sh**
+          ./**init-db.sh**
