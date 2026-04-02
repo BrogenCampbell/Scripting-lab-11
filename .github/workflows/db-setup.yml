@@ -11,37 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Pull the code from your GitHub repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Start the database (creates the 'db' service)
       - name: Start Database
         run: docker compose up -d
 
-      # 3. DEBUG: If the database fails, this shows us the error message
       - name: Check Database Logs
         run: docker compose logs db
 
-      # 4. Wait for Postgres to fully boot up
       - name: Wait for Postgres
         run: |
           echo "Waiting for Postgres to accept connections..."
-          # This loop tries every 3 seconds for about a minute
-          for i in {1..20}; do
+          # This loop checks the 'db' service every 4 seconds
+          for i in {1..15}; do
             if docker compose exec -T db pg_isready -U postgres; then
               echo "Postgres is ready!"
               exit 0
             fi
-            echo "Still waiting... ($i/20)"
-            sleep 3
+            echo "Still waiting... ($i/15)"
+            sleep 4
           done
-          echo "Postgres failed to start in time."
+          echo "Postgres failed to start."
           exit 1
 
-      # 5. Run your SQL script inside the container
       - name: Run Database Initialization Script
         run: |
           chmod +x init-db.sh
-          # This sends your script into the 'db' service
+          # Pipes the local script into the container's bash
           docker compose exec -T db bash < init-db.sh
