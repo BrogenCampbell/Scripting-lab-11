@@ -1,0 +1,35 @@
+name: Database Setup Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Pull the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Start the database using your docker-compose.yml
+      - name: Start Database
+        run: docker-compose up -d
+
+      # 3. Wait for Postgres to be ready
+      # It takes a few seconds for Postgres to fully initialize
+      - name: Wait for Postgres
+        run: |
+          until docker exec mydb pg_isready -U postgres; do
+            echo "Waiting for Postgres to start..."
+            sleep 2
+          done
+
+      # 4. Run your bash script
+      - name: Run Database Initialization Script
+        run: |
+          chmod +x init_db.sh
+          ./init_db.sh
