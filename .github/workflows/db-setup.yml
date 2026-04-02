@@ -11,20 +11,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Pull the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Start the database using your docker-compose.yaml
       - name: Start Database
         run: docker compose up -d
 
+      # 3. Wait for Postgres to be ready
       - name: Wait for Postgres
         run: |
-          until docker exec mydb pg_isready -U postgres; do
+          # Use 'db' (the service name in your yaml) instead of 'mydb'
+          until docker compose exec -T db pg_isready -U postgres; do
             echo "Waiting for Postgres to start..."
             sleep 2
           done
 
+      # 4. Run your bash script
       - name: Run Database Initialization Script
         run: |
           chmod +x init-db.sh
-          ./init-db.sh
+          # This pipes the script into the running 'db' container
+          docker compose exec -T db bash < init-db.sh
